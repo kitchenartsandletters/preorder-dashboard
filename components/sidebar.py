@@ -12,8 +12,7 @@ def render_sidebar():
         str: The selected page identifier, or None if no new selection was made
     """
     with st.sidebar:
-        # Header section with logo and title
-        st.image("https://via.placeholder.com/150x80?text=Book+Shop", width=150)
+        # Header section with title (without external image)
         st.title("Preorder Admin")
         st.divider()
 

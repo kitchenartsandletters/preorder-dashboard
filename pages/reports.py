@@ -209,36 +209,44 @@ def show_reports():
                     lambda x: x.strftime('%Y-%m') if x else None
                 )
                 
-                monthly_counts = valid_dates.groupby('Publication Month').size().reset_index(name='Count')
+                # Filter out any None values that might have slipped through
+                valid_dates = valid_dates.dropna(subset=['Publication Month'])
                 
-                # Sort by month
-                monthly_counts = monthly_counts.sort_values('Publication Month')
-                
-                # Create a bar chart
-                fig = px.bar(
-                    monthly_counts,
-                    x='Publication Month',
-                    y='Count',
-                    title='Publication Dates by Month',
-                    labels={'Count': 'Number of Books', 'Publication Month': 'Month'}
-                )
-                
-                st.plotly_chart(fig, use_container_width=True)
+                if not valid_dates.empty:
+                    monthly_counts = valid_dates.groupby('Publication Month').size().reset_index(name='Count')
+                    
+                    # Sort by month
+                    monthly_counts = monthly_counts.sort_values('Publication Month')
+                    
+                    # Create a bar chart
+                    fig = px.bar(
+                        monthly_counts,
+                        x='Publication Month',
+                        y='Count',
+                        title='Publication Dates by Month',
+                        labels={'Count': 'Number of Books', 'Publication Month': 'Month'}
+                    )
+                    
+                    st.plotly_chart(fig, use_container_width=True)
                 
                 # Create a histogram of days until publication
                 future_pubs = valid_dates[valid_dates['Days Until Publication'] >= -30].copy()
                 if not future_pubs.empty:
-                    # Create bins for the histogram
-                    max_days = future_pubs['Days Until Publication'].max()
-                    bins = list(range(-30, max_days + 30, 30))
-                    
-                    fig = px.histogram(
-                        future_pubs,
-                        x='Days Until Publication',
-                        nbins=len(bins),
-                        title='Days Until Publication (Upcoming Books)',
-                        labels={'Days Until Publication': 'Days Until Publication', 'count': 'Number of Books'}
-                    )
+            # Create bins for the histogram
+                    if not future_pubs.empty:
+                        max_days = future_pubs['Days Until Publication'].max()
+                        # Ensure step size is compatible with min/max values
+                        bin_step = 30
+                        max_bin = ((max_days // bin_step) + 1) * bin_step
+                        bins = list(range(-30, int(max_bin) + bin_step, bin_step))
+                        
+                        fig = px.histogram(
+                            future_pubs,
+                            x='Days Until Publication',
+                            title='Days Until Publication (Upcoming Books)',
+                            labels={'Days Until Publication': 'Days Until Publication', 'count': 'Number of Books'},
+                            nbins=len(bins)-1  # Use nbins instead of explicit bins
+                        )
                     
                     # Add a vertical line at day 0 (today)
                     fig.add_vline(x=0, line_dash="dash", line_color="red")

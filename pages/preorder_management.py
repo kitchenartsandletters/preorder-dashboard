@@ -227,54 +227,60 @@ def show_preorder_management():
                 if not date_data.empty:
                     try:
                         # Convert to datetime for grouping
-                        date_data['Pub Date'] = pd.to_datetime(date_data['Pub Date'])
+                        date_data['Pub Date'] = pd.to_datetime(date_data['Pub Date'], errors='coerce')
                         
-                        # Group by month
-                        date_data['Month'] = date_data['Pub Date'].dt.strftime('%Y-%m')
-                        monthly_summary = date_data.groupby('Month').agg({
-                            'Quantity': 'sum',
-                            'ISBN': 'nunique'
-                        }).reset_index()
+                        # Drop rows where conversion failed (NaT values)
+                        date_data = date_data.dropna(subset=['Pub Date'])
                         
-                        # Rename columns
-                        monthly_summary = monthly_summary.rename(columns={
-                            'ISBN': 'Unique Titles'
-                        })
-                        
-                        # Sort by month
-                        monthly_summary = monthly_summary.sort_values('Month')
-                        
-                        # Create a bar chart
-                        fig = px.bar(
-                            monthly_summary,
-                            x='Month',
-                            y='Quantity',
-                            title='Preorders by Publication Month',
-                            labels={'Quantity': 'Preordered Copies', 'Month': 'Publication Month'},
-                            text='Quantity'
-                        )
-                        
-                        # Add title count as a line on secondary y-axis
-                        fig.add_trace(
-                            go.Scatter(
-                                x=monthly_summary['Month'],
-                                y=monthly_summary['Unique Titles'],
-                                mode='lines+markers',
-                                name='Unique Titles',
-                                yaxis='y2'
+                        if date_data.empty:
+                            st.warning("No valid publication dates found for analysis")
+                        else:
+                            # Group by month
+                            date_data['Month'] = date_data['Pub Date'].dt.strftime('%Y-%m')
+                            monthly_summary = date_data.groupby('Month').agg({
+                                'Quantity': 'sum',
+                                'ISBN': 'nunique'
+                            }).reset_index()
+                            
+                            # Rename columns
+                            monthly_summary = monthly_summary.rename(columns={
+                                'ISBN': 'Unique Titles'
+                            })
+                            
+                            # Sort by month
+                            monthly_summary = monthly_summary.sort_values('Month')
+                            
+                            # Create a bar chart
+                            fig = px.bar(
+                                monthly_summary,
+                                x='Month',
+                                y='Quantity',
+                                title='Preorders by Publication Month',
+                                labels={'Quantity': 'Preordered Copies', 'Month': 'Publication Month'},
+                                text='Quantity'
                             )
-                        )
-                        
-                        # Update layout for dual y-axis
-                        fig.update_layout(
-                            yaxis2=dict(
-                                title='Unique Titles',
-                                overlaying='y',
-                                side='right'
+                            
+                            # Add title count as a line on secondary y-axis
+                            fig.add_trace(
+                                go.Scatter(
+                                    x=monthly_summary['Month'],
+                                    y=monthly_summary['Unique Titles'],
+                                    mode='lines+markers',
+                                    name='Unique Titles',
+                                    yaxis='y2'
+                                )
                             )
-                        )
-                        
-                        st.plotly_chart(fig, use_container_width=True)
+                            
+                            # Update layout for dual y-axis
+                            fig.update_layout(
+                                yaxis2=dict(
+                                    title='Unique Titles',
+                                    overlaying='y',
+                                    side='right'
+                                )
+                            )
+                            
+                            st.plotly_chart(fig, use_container_width=True)
                     except Exception as e:
                         st.error(f"Error creating publication date chart: {e}")
             
@@ -330,7 +336,8 @@ def show_preorder_management():
                 min_value=7,
                 max_value=90,
                 value=30,
-                step=7
+                step=7,
+                key="days_to_analyze_slider"
             )
         
         with col2:
