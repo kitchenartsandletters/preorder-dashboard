@@ -74,11 +74,16 @@ class DataService:
         try:
             # Get products from Shopify preorder collection
             products = self.shopify.get_products_from_collection("preorder", limit=limit)
-            logger.info(f"Retrieved {len(products)} preorder products from Shopify")
-            return products
+            if products is not None:
+                logger.info(f"Retrieved {len(products)} preorder products from Shopify")
+                return products
+            else:
+                logger.warning("No products returned from Shopify API, using test data instead")
+                return self._get_test_preorder_products(limit)
         except Exception as e:
             logger.error(f"Error retrieving preorder products: {e}")
-            return []
+            logger.info("Falling back to test data due to API error")
+            return self._get_test_preorder_products(limit)
     
     def get_pending_releases(self):
         """

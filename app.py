@@ -34,6 +34,13 @@ if 'current_page' not in st.session_state:
 
 def main():
     """Main function to render the dashboard"""
+    # Initialize session state if needed
+    if 'current_page' not in st.session_state:
+        st.session_state.current_page = 'dashboard'
+    
+    if 'test_mode' not in st.session_state:
+        st.session_state.test_mode = True  # Default to test mode for easier initial setup
+    
     # Render the header with title and user info
     render_header()
     

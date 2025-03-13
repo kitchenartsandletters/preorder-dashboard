@@ -447,7 +447,8 @@ def show_reports():
                 filters["min_quantity"] = st.number_input(
                     "Minimum Quantity",
                     min_value=0,
-                    value=1
+                    value=1,
+                    key="min_quantity_filter"
                 )
             
             # Display options

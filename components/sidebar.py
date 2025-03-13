@@ -12,10 +12,12 @@ def render_sidebar():
         str: The selected page identifier, or None if no new selection was made
     """
     with st.sidebar:
+        # Header section with logo and title
         st.image("https://via.placeholder.com/150x80?text=Book+Shop", width=150)
         st.title("Preorder Admin")
+        st.divider()
 
-        # Navigation options
+        # Navigation section
         st.subheader("Navigation")
         
         # Dashboard - Overview and summary
@@ -53,17 +55,21 @@ def render_sidebar():
                            type="primary" if st.session_state.current_page == 'reports' else "secondary"):
             return "reports"
         
-        # Display environment info
+        # Settings and information section
+        st.divider()
+        st.subheader("Settings")
+        
+        # Test mode toggle
+        test_mode = st.sidebar.toggle("Test Mode (Use Sample Data)", value=True)
+        st.session_state.test_mode = test_mode
+        
+        if test_mode:
+            st.sidebar.info("📌 Test mode active - using sample data")
+        
+        # Environment info
         st.sidebar.divider()
         environment = os.getenv("ENVIRONMENT", "development")
         st.sidebar.caption(f"Environment: {environment}")
-        
-        # Test mode toggle
-        test_mode = st.sidebar.toggle("Test Mode (No API Calls)", value=False)
-        if test_mode:
-            st.sidebar.info("Test mode active - using simulated data")
-            
-        # Show version
         st.sidebar.caption("Version 1.0.0")
         
     return None  # No new selection
