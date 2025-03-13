@@ -2,6 +2,7 @@
 Sidebar navigation component for the Preorder Admin Dashboard.
 """
 import streamlit as st
+import os
 
 def render_sidebar():
     """
